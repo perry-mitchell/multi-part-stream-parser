@@ -1,4 +1,4 @@
 # Multi-Parse
-> Parse multi-part data streams
+> Parse multi-part form data streams
 
 _TBA_

@@ -1,7 +1,7 @@
 {
   "name": "multi-parse",
   "version": "0.0.0",
-  "description": "Multi-part stream parser",
+  "description": "Multi-part form data stream parser",
   "exports": "./dist/index.js",
   "type": "module",
   "scripts": {
