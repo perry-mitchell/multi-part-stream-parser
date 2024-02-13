@@ -1,0 +1,32 @@
+{
+  "name": "multi-parse",
+  "version": "0.0.0",
+  "description": "Multi-part stream parser",
+  "exports": "./dist/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/perry-mitchell/multi-parse.git"
+  },
+  "keywords": [
+    "multi-part",
+    "parse",
+    "stream"
+  ],
+  "author": "Perry Mitchell <perry@perrymitchell.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/perry-mitchell/multi-parse/issues"
+  },
+  "homepage": "https://github.com/perry-mitchell/multi-parse#readme",
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "eventemitter3": "^5.0.1"
+  }
+}
