@@ -4,16 +4,18 @@ import EventEmitter from "eventemitter3";
 import { extractName, readBufferUntilBoundary, readBufferUntilNewline } from "./util.js";
 import { ParseEvent, ParseStatus, SectionHeaders } from "./types.js";
 
-export interface ParseEvents {
+interface ParserEvents {
     [ParseEvent.SectionContent]: (name: string | null, content: string | Buffer) => void;
     [ParseEvent.SectionContentStream]: (name: string | null, stream: Readable) => void;
     [ParseEvent.SectionHeaders]: (name: string | null, headers: SectionHeaders) => void;
 }
 
+export type ParserEmitter = EventEmitter<ParserEvents>;
+
 export function parseMultiPartStream(
     stream: Readable
-): EventEmitter<ParseEvents> {
-    const emitter = new EventEmitter<ParseEvents>();
+): ParserEmitter {
+    const emitter = new EventEmitter<ParserEvents>();
     let buffer: Buffer = Buffer.from([]),
         state: ParseStatus = ParseStatus.Boundary,
         boundary: string = "",
