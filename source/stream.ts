@@ -25,11 +25,14 @@ export function parseMultiPartStream(
         currentContent: Buffer = Buffer.from([]);
     // Handle buffering
     const processBuffer = () => {
+        // console.log("\n=============================\nCHECK BUFFER:\n", buffer.toString());
         if (state === ParseStatus.Boundary) {
             const [text, next] = readBufferUntilNewline(buffer);
+            // console.log("GET BOUNDARY", text, next.toString());
             buffer = next;
             if (text.length > 0) {
                 if (boundary.length > 0 && boundary !== text) {
+                    // console.warn({ boundary, text });
                     throw new Error("Mismatched boundaries in content");
                 }
                 boundary = text;
