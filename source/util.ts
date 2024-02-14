@@ -48,8 +48,14 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
 
 export function readBufferUntilNewline(buffer: Buffer): [output: string, remaining: Buffer] {
     const str = buffer.toString("utf-8");
+    const crIndex = str.indexOf("\r\n");
     const nlIndex = str.indexOf("\n");
-    if (nlIndex >= 0) {
+    if (crIndex >= 0) {
+        return [
+            str.substring(0, crIndex),
+            buffer.slice(crIndex + 2)
+        ];
+    } else if (nlIndex >= 0) {
         return [
             str.substring(0, nlIndex),
             buffer.slice(nlIndex + 1)
