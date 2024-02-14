@@ -1,6 +1,7 @@
 import type { Readable } from "node:stream";
+import { PassThrough } from "node:stream";
 import EventEmitter from "eventemitter3";
-import { extractName, readBufferUntilNewline } from "./util.js";
+import { extractName, readBufferUntilBoundary, readBufferUntilNewline } from "./util.js";
 import { ParseEvent, ParseStatus, SectionHeaders } from "./types.js";
 
 export interface ParseEvents {
@@ -16,7 +17,9 @@ export function parseMultiPartStream(
     let buffer: Buffer = Buffer.from([]),
         state: ParseStatus = ParseStatus.Boundary,
         boundary: string = "",
-        currentHeaders: SectionHeaders = {};
+        currentHeaders: SectionHeaders = {},
+        currentStream: Readable | null = null,
+        currentContent: Buffer = Buffer.from([]);
     // Handle buffering
     const processBuffer = () => {
         if (state === ParseStatus.Boundary) {
@@ -47,7 +50,24 @@ export function parseMultiPartStream(
                 state = ParseStatus.Content;
             }
         } else if (state === ParseStatus.Content) {
-            // @todo
+            if (!currentStream) {
+                // Create new stream
+                currentStream = new PassThrough();
+                const name = extractName(currentHeaders);
+                emitter.emit(ParseEvent.SectionContentStream, name, currentStream);
+            }
+            // Read a section
+            const [processed, next, reachedEnd] = readBufferUntilBoundary(buffer, boundary);
+            if (processed.length > 0) {
+                currentStream.push(processed);
+                currentContent = Buffer.concat([currentContent, processed]);
+            }
+            buffer = next;
+            if (reachedEnd) {
+                state = ParseStatus.Boundary;
+            }
+        } else {
+            throw new Error(`Unknown state: ${state}`);
         }
     };
     // Peel data
