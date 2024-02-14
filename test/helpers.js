@@ -2,7 +2,7 @@ import { Minipass } from "minipass";
 import MultiPart from "multi-part";
 
 const INTERVAL = 75;
-const STREAM_TIME = 1500;
+const STREAM_TIME = 800;
 
 const RANDOM_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678.,!~@#$%^&*()-_[]{};:'<>?|\n\n\n\n";
 

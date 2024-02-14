@@ -42,7 +42,7 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
         return [
             Buffer.from([]),
             // Set next to the start of the boundary
-            buffer.slice(crIndex >= 0 ? 2 : 1),
+            buffer.slice(str.length - boundaryTest.length),
             true
         ];
     }

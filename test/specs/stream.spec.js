@@ -6,9 +6,10 @@ import { parseMultiPartStream } from "../../dist/stream.js";
 
 const endOfStream = promisify(endOfStreamCB);
 
-xdescribe("parseMultiPartStream", function() {
+describe.only("parseMultiPartStream", function() {
     beforeEach(async function() {
         this.stream = await getMultiPartStream();
+        this.emitter = parseMultiPartStream(this.stream);
     });
 
     afterEach(async function() {
@@ -16,7 +17,7 @@ xdescribe("parseMultiPartStream", function() {
     });
 
     it("outputs an emitter", async function() {
-        const emitter = parseMultiPartStream(this.stream);
-        expect(emitter).to.have.property("on").that.is.a("function");
+        expect(this.emitter).to.have.property("on").that.is.a("function");
+        await this.emitter.whenComplete();
     });
 });

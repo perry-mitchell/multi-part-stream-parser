@@ -9,7 +9,7 @@
     "build:compile": "tsc",
     "clean": "rimraf dist",
     "test": "run-s build test:specs",
-    "test:specs": "c8 --src ./dist --check-coverage --lines 25 --functions 25 --branches 25 --statements 25 mocha --timeout 15000 test/specs/**/*.spec.js"
+    "test:specs": "c8 --src ./dist --check-coverage --lines 25 --functions 25 --branches 25 --statements 25 mocha --timeout 5000 test/specs/**/*.spec.js"
   },
   "files": [
     "dist/**/*"

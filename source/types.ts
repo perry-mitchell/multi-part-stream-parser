@@ -1,7 +1,8 @@
 export enum ParseEvent {
-    SectionContent,
-    SectionHeaders,
-    SectionContentStream
+    Complete = "complete",
+    SectionContent = "section-content",
+    SectionHeaders = "section-headers",
+    SectionContentStream = "section-content-stream"
 }
 
 export enum ParseStatus {
