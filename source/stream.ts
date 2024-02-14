@@ -3,6 +3,7 @@ import { PassThrough } from "node:stream";
 import EventEmitter from "eventemitter3";
 import { extractName, readBufferUntilBoundary, readBufferUntilNewline } from "./util.js";
 import { ParseEvent, ParseStatus, SectionHeaders } from "./types.js";
+import { debug } from "./debug.js";
 
 interface ParserEvents {
     [ParseEvent.SectionContent]: (name: string | null, content: string | Buffer) => void;
@@ -33,6 +34,7 @@ export function parseMultiPartStream(
                 }
                 boundary = text;
                 state = ParseStatus.Headers;
+                debug(`state change: ${state}`);
             }
         } else if (state === ParseStatus.Headers) {
             const [text, next] = readBufferUntilNewline(buffer);
@@ -50,6 +52,7 @@ export function parseMultiPartStream(
                 const name = extractName(currentHeaders);
                 emitter.emit(ParseEvent.SectionHeaders, name, { ...currentHeaders });
                 state = ParseStatus.Content;
+                debug(`state change: ${state}`);
             }
         } else if (state === ParseStatus.Content) {
             if (!currentStream) {
@@ -67,6 +70,7 @@ export function parseMultiPartStream(
             buffer = next;
             if (reachedEnd) {
                 state = ParseStatus.Boundary;
+                debug(`state change: ${state}`);
             }
         } else {
             throw new Error(`Unknown state: ${state}`);
