@@ -1,4 +1,4 @@
-import { SectionHeaders } from "./types.js";
+import { BoundaryResult, SectionHeaders } from "./types.js";
 
 export function extractName(headers: SectionHeaders): string | null {
     const contentDisposition = headers["content-disposition"] ?? "";
@@ -9,28 +9,29 @@ export function extractName(headers: SectionHeaders): string | null {
 export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
     output: Buffer,
     remaining: Buffer,
-    end: boolean
+    result: BoundaryResult
 ] {
     const str = buffer.toString("utf-8");
     const crIndex = str.indexOf("\r\n");
     const nlIndex = str.indexOf("\n");
     if (crIndex === -1 && nlIndex === -1) {
         // No newline, so we can continue reading
-        return [buffer, Buffer.from([]), false];
-    } else if (str.length < (boundary.length + 1)) {
-        // Newline, but length can't contain a full boundary..
-        // Read up until the new line and process the rest later
+        return [buffer, Buffer.from([]), BoundaryResult.None];
+    } else if (str.length < (boundary.length + 2)) {
+        // Newline, but length can't contain a full boundary or
+        // epilogue boundary. Read up until the new line and process
+        // the rest later
         if (crIndex >= 0) {
             return [
                 buffer.slice(0, crIndex),
                 buffer.slice(crIndex + 1),
-                false
+                BoundaryResult.None
             ];
         }
         return [
             buffer.slice(0, nlIndex),
             buffer.slice(nlIndex),
-            false
+            BoundaryResult.None
         ];
     }
     // From here we know that the buffer has a new-line, and that
@@ -38,12 +39,20 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
     // first content is: "\n<boundary>"
     const boundaryTest = str.replace(/^(\r)?\n/, "");
     if (boundaryTest.indexOf(boundary) === 0) {
-        // Boundary, end the section
+        if (boundaryTest.indexOf(`${boundary}--`) === 0) {
+            // Epilogue boundary, stop parsing
+            return [
+                Buffer.from([]),
+                Buffer.from([]),
+                BoundaryResult.Epilogue
+            ];
+        }
+        // Standard boundary, end the section
         return [
             Buffer.from([]),
             // Set next to the start of the boundary
             buffer.slice(str.length - boundaryTest.length),
-            true
+            BoundaryResult.Boundary
         ];
     }
     // No boundary yet, continue reading up until just before the new line
@@ -51,12 +60,12 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
         ? [
             buffer.slice(0, crIndex),
             buffer.slice(crIndex),
-            false
+            BoundaryResult.None
         ]
         : [
             buffer.slice(0, nlIndex),
             buffer.slice(nlIndex),
-            false
+            BoundaryResult.None
         ];
 }
 

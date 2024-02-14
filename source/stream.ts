@@ -3,7 +3,7 @@ import { PassThrough } from "node:stream";
 import { extractName, readBufferUntilBoundary, readBufferUntilNewline } from "./util.js";
 import { debug } from "./debug.js";
 import { ParserEmitter } from "./ParserEmitter.js";
-import { ParseEvent, ParseStatus, SectionHeaders } from "./types.js";
+import { BoundaryResult, ParseEvent, ParseStatus, SectionHeaders } from "./types.js";
 
 export function parseMultiPartStream(
     stream: Readable
@@ -13,19 +13,20 @@ export function parseMultiPartStream(
         state: ParseStatus = ParseStatus.Boundary,
         boundary: string = "",
         currentHeaders: SectionHeaders = {},
-        currentStream: Readable | null = null,
+        currentStream: PassThrough | null = null,
         currentContent: Buffer = Buffer.from([]);
     debug(`initial state: ${state}`);
     // Handle buffering
     const processBuffer = () => {
-        // console.log("CHECK BUFFER:\n=============================\n", buffer.toString(), "\n=============================");
-        if (state === ParseStatus.Boundary) {
+        if (state === ParseStatus.Epilogue) {
+            // Finished, just skip
+            buffer = Buffer.from([]);
+            return;
+        } else if (state === ParseStatus.Boundary) {
             const [text, next] = readBufferUntilNewline(buffer);
-            // console.log("GET BOUNDARY", text, next.toString());
             buffer = next;
             if (text.length > 0) {
                 if (boundary.length > 0 && boundary !== text) {
-                    console.warn({ boundary, text });
                     throw new Error("Mismatched boundaries in content");
                 }
                 boundary = text;
@@ -58,21 +59,25 @@ export function parseMultiPartStream(
                 emitter.emit(ParseEvent.SectionContentStream, name, currentStream);
             }
             // Read a section
-            const [processed, next, reachedEnd] = readBufferUntilBoundary(buffer, boundary);
-            // console.log("READ CONTENT BUFFERS", {
-            //     currentContent: currentContent.toString(),
-            //     processed: processed.toString(),
-            //     next: next.toString(),
-            //     reachedEnd
-            // });
+            const [processed, next, boundaryResult] = readBufferUntilBoundary(buffer, boundary);
             if (processed.length > 0) {
                 currentStream.push(processed);
                 currentContent = Buffer.concat([currentContent, processed]);
             }
             buffer = next;
-            if (reachedEnd) {
+            if (boundaryResult === BoundaryResult.Boundary) {
                 state = ParseStatus.Boundary;
+            } else if (boundaryResult === BoundaryResult.Epilogue) {
+                state = ParseStatus.Epilogue;
+            }
+            if ([BoundaryResult.Boundary, BoundaryResult.Epilogue].includes(boundaryResult)) {
                 debug(`state change: ${state}`);
+                const name = extractName(currentHeaders);
+                emitter.emit(ParseEvent.SectionContent, name, currentContent);
+                currentHeaders = {};
+                currentContent = Buffer.from([]);
+                currentStream.end();
+                currentStream = null;
             }
         } else {
             throw new Error(`Unknown state: ${state}`);
@@ -80,8 +85,7 @@ export function parseMultiPartStream(
     };
     // Peel data
     stream.on("data", (chunk: Buffer | string) => {
-        // console.log("MORE DATA");
-        console.log(chunk.toString());
+        debug(`streamed chunk size: ${chunk.length}`);
         if (typeof chunk === "string") {
             buffer = Buffer.concat([buffer, Buffer.from(chunk, "utf-8")]);
         } else if (Buffer.isBuffer(chunk)) {
@@ -90,6 +94,7 @@ export function parseMultiPartStream(
         processBuffer();
     });
     stream.on("close", () => {
+        debug("stream closed");
         // Cleanup buffer
         let lastLength = buffer.length;
         while (buffer.length > 0) {

@@ -1,3 +1,9 @@
+export enum BoundaryResult {
+    Boundary = "boundary",
+    Epilogue = "epilogue",
+    None = "none"
+}
+
 export enum ParseEvent {
     Complete = "complete",
     SectionContent = "section-content",
@@ -8,6 +14,7 @@ export enum ParseEvent {
 export enum ParseStatus {
     Boundary = "boundary",
     Content = "content",
+    Epilogue = "epilogue",
     Headers = "headers"
 }
 
