@@ -12,13 +12,21 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
     end: boolean
 ] {
     const str = buffer.toString("utf-8");
+    const crIndex = str.indexOf("\r\n");
     const nlIndex = str.indexOf("\n");
-    if (nlIndex === -1) {
+    if (crIndex === -1 && nlIndex === -1) {
         // No newline, so we can continue reading
         return [buffer, Buffer.from([]), false];
     } else if (str.length < (boundary.length + 1)) {
         // Newline, but length can't contain a full boundary..
         // Read up until the new line and process the rest later
+        if (crIndex >= 0) {
+            return [
+                buffer.slice(0, crIndex),
+                buffer.slice(crIndex + 1),
+                false
+            ];
+        }
         return [
             buffer.slice(0, nlIndex),
             buffer.slice(nlIndex),
@@ -28,22 +36,28 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
     // From here we know that the buffer has a new-line, and that
     // it's long enough to contain the boundary. Check to see if the
     // first content is: "\n<boundary>"
-    const boundaryTest = str.replace(/^\n/, "");
+    const boundaryTest = str.replace(/^(\r)?\n/, "");
     if (boundaryTest.indexOf(boundary) === 0) {
         // Boundary, end the section
         return [
             Buffer.from([]),
             // Set next to the start of the boundary
-            buffer.slice(1),
+            buffer.slice(crIndex >= 0 ? 2 : 1),
             true
         ];
     }
-    // No boundary, continue reading up until just after the new line
-    return [
-        buffer.slice(0, nlIndex + 1),
-        buffer.slice(nlIndex + 1),
-        false
-    ];
+    // No boundary yet, continue reading up until just before the new line
+    return crIndex >= 0
+        ? [
+            buffer.slice(0, crIndex),
+            buffer.slice(crIndex),
+            false
+        ]
+        : [
+            buffer.slice(0, nlIndex),
+            buffer.slice(nlIndex),
+            false
+        ];
 }
 
 export function readBufferUntilNewline(buffer: Buffer): [output: string, remaining: Buffer] {
