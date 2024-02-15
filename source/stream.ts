@@ -5,6 +5,17 @@ import { debug } from "./debug.js";
 import { ParserEmitter } from "./ParserEmitter.js";
 import { BoundaryResult, ParseEvent, ParseStatus, SectionHeaders } from "./types.js";
 
+/**
+ * Parse a multi-part stream
+ * @param stream The readable stream to parse
+ * @returns An event emitter to catch parts of
+ *  the stream
+ * @example
+ *  const emitter = parseMultiPartStream(stream);
+ *  emitter.on(ParseEvent.SectionContent, (name, buffer) => {
+ *      console.log(`Section ${name}'s content: ${buffer.toString()}`);
+ *  });
+ */
 export function parseMultiPartStream(
     stream: Readable
 ): ParserEmitter {
