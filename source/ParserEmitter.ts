@@ -1,6 +1,7 @@
 import type { Readable } from "node:stream";
 import EventEmitter from "eventemitter3";
 import { ParseEvent, SectionHeaders } from "./types.js";
+import { debugEmitter } from "./debug.js";
 
 export interface ParserEvents {
     [ParseEvent.Complete]: () => void;
@@ -15,12 +16,20 @@ export class ParserEmitter extends EventEmitter<ParserEvents> {
     constructor() {
         super();
         this.once(ParseEvent.Complete, () => {
+            debugEmitter("parse complete event received");
             this.__completed = true;
         });
     }
 
     get complete(): boolean {
         return this.__completed;
+    }
+
+    destroy(): void {
+        if (this.__completed) return;
+        debugEmitter("destroy");
+        this.__completed = true;
+        this.emit(ParseEvent.Complete);
     }
 
     async whenComplete(): Promise<void> {

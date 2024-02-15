@@ -14,6 +14,7 @@ describe("parseMultiPartStream", function() {
 
     afterEach(async function() {
         await this.emitter.whenComplete();
+        await this.emitter.destroy();
     });
 
     it("outputs an emitter", async function() {

@@ -9,6 +9,7 @@ export function parseMultiPartStream(
     stream: Readable
 ): ParserEmitter {
     const emitter = new ParserEmitter();
+    const allStreams: Array<PassThrough> = [];
     let buffer: Buffer = Buffer.from([]),
         state: ParseStatus = ParseStatus.Boundary,
         boundary: string = "",
@@ -16,6 +17,16 @@ export function parseMultiPartStream(
         currentStream: PassThrough | null = null,
         currentContent: Buffer = Buffer.from([]);
     debug(`initial state: ${state}`);
+    // Handle cleanup
+    emitter.on(ParseEvent.Complete, () => {
+        debug(`cleanup will destroy ${allStreams.length} streams`);
+        for (const stream of allStreams) {
+            if (!stream.destroyed) {
+                stream.destroy();
+            }
+        }
+        allStreams.splice(0, Infinity);
+    });
     // Handle buffering
     const processBuffer = () => {
         if (state === ParseStatus.Epilogue) {
@@ -63,6 +74,7 @@ export function parseMultiPartStream(
             if (!currentStream) {
                 // Create new stream
                 currentStream = new PassThrough();
+                allStreams.push(currentStream);
                 const name = extractName(currentHeaders);
                 emitter.emit(ParseEvent.SectionContentStream, name, currentStream);
             }
