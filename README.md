@@ -1,4 +1,4 @@
-# Multi-Parse
+# Multi-Part-Parser
 > Parse multi-part form data streams
 
 ## About
@@ -7,7 +7,7 @@
 
 ## Installation
 
-Simply install by running `npm install multi-parse --save`.
+Simply install by running `npm install multi-part-parser --save`.
 
 Compatible with NodeJS 18 and up.
 
@@ -16,7 +16,7 @@ Compatible with NodeJS 18 and up.
 Pass a readable stream of multi-part data to `parseMultiPartStream`:
 
 ```typescript
-import { ParseEvent, parseMultiPartStream } from "multi-parse";
+import { ParseEvent, parseMultiPartStream } from "multi-part-parser";
 
 // ...
 
