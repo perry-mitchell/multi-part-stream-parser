@@ -1,6 +1,24 @@
 import { expect } from "chai";
-import { readBufferUntilBoundary, readBufferUntilNewline } from "../../dist/util.js";
+import { extractName, readBufferUntilBoundary, readBufferUntilNewline } from "../../dist/util.js";
 import { BoundaryResult } from "../../dist/types.js";
+
+describe("extractName", function() {
+    it("returns null for empty headers", function() {
+        expect(extractName({})).to.equal(null);
+    });
+
+    it("returns null for headers with no name", function() {
+        expect(extractName({
+            "content-disposition": "form-data"
+        })).to.equal(null);
+    });
+
+    it("returns correct name", function() {
+        expect(extractName({
+            "content-disposition": "form-data; name=\"body\""
+        })).to.equal("body");
+    });
+});
 
 describe("readBufferUntilBoundary", function() {
     beforeEach(function() {
@@ -105,5 +123,12 @@ describe("readBufferUntilNewline", function() {
         const [result, remain] = readBufferUntilNewline(buff);
         expect(result).to.equal("Line 1");
         expect(remain.toString()).to.equal("Line 2");
+    });
+
+    it("reads buffers with multiple new-lines", function() {
+        const buff = Buffer.from("Line 1\nLine 2\nLine 3");
+        const [result, remain] = readBufferUntilNewline(buff);
+        expect(result).to.equal("Line 1");
+        expect(remain.toString()).to.equal("Line 2\nLine 3");
     });
 });

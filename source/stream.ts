@@ -34,23 +34,31 @@ export function parseMultiPartStream(
                 debug(`state change: ${state}`);
             }
         } else if (state === ParseStatus.Headers) {
-            const [text, next] = readBufferUntilNewline(buffer);
+            const [text, next, hasNewline] = readBufferUntilNewline(buffer);
             buffer = next;
-            if (text.length > 0) {
-                // Headers continue
-                const match = /^([a-z-]+):(.+)$/i.exec(text);
-                if (!match) {
-                    throw new Error(`Bad header: ${text}`);
+            if (hasNewline) {
+                // New line found, so we can continue parsing
+                if (text.length > 0) {
+                    // Headers continue
+                    const match = /^([a-z-]+):(.+)$/i.exec(text);
+                    if (!match) {
+                        throw new Error(`Bad header: ${text}`);
+                    }
+                    const [, key, value] = match;
+                    currentHeaders[key.trim().toLowerCase()] = value.trim();
+                } else {
+                    // Headers finished
+                    const name = extractName(currentHeaders);
+                    emitter.emit(ParseEvent.SectionHeaders, name, { ...currentHeaders });
+                    state = ParseStatus.Content;
+                    debug(`state change: ${state}`);
                 }
-                const [, key, value] = match;
-                currentHeaders[key.toLowerCase()] = value;
-            } else {
-                // Headers finished
-                const name = extractName(currentHeaders);
-                emitter.emit(ParseEvent.SectionHeaders, name, { ...currentHeaders });
-                state = ParseStatus.Content;
-                debug(`state change: ${state}`);
             }
+            // If no new line found, we skip parsing and return later..
+            // A new line is required to know whether or not we've
+            // finished the header line, and whether or not we're able
+            // to detect a blank line signalling that the content has
+            // started..
         } else if (state === ParseStatus.Content) {
             if (!currentStream) {
                 // Create new stream

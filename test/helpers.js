@@ -1,8 +1,8 @@
 import { Minipass } from "minipass";
 import MultiPart from "multi-part";
 
+const COUNT = 10;
 const INTERVAL = 75;
-const STREAM_TIME = 800;
 
 const RANDOM_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678.,!~@#$%^&*()-_[]{};:'<>?|\n\n\n\n";
 
@@ -26,15 +26,23 @@ export async function getMultiPartStream() {
     // Body
     const responseStream = new Minipass();
     mp.append("body", responseStream);
-    let timesLeft = Math.floor(STREAM_TIME / INTERVAL);
+    const parts = [];
+    let expectedContent = "";
+    for (let i = 0; i < COUNT; i += 1) {
+        const part = generateRandomString(100);
+        expectedContent = `${expectedContent}${part}`;
+        parts.push(part);
+    }
     const interval = setInterval(() => {
-        responseStream.write(generateRandomString(100));
-        timesLeft -= 1;
-        if (timesLeft <= 0) {
-            clearInterval(interval);
+        const item = parts.shift();
+        if (typeof item !== "string") {
             responseStream.end();
+            clearInterval(interval);
+            return;
         }
+        responseStream.write(item);
     }, INTERVAL);
     // Output
-    return mp.stream();
+    const stream = await mp.stream();
+    return [stream, expectedContent];
 }
