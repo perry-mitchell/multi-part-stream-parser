@@ -1,13 +1,13 @@
-# Multi-Part-Parser
+# Multi-Part-Stream-Parser
 > Parse multi-part form data streams
 
 ## About
 
-**Multi-Parse** provides a capture mechanism for parsing multi-part encoded streams, allowing consumers to listen for each section (split by boundary) of a multi-part document.
+**Multi-Part-Stream-Parser** provides a capture mechanism for parsing multi-part encoded streams, allowing consumers to listen for each section (split by boundary) of a multi-part document.
 
 ## Installation
 
-Simply install by running `npm install multi-part-parser --save`.
+Simply install by running `npm install multi-part-stream-parser --save`.
 
 Compatible with NodeJS 18 and up.
 
@@ -16,7 +16,7 @@ Compatible with NodeJS 18 and up.
 Pass a readable stream of multi-part data to `parseMultiPartStream`:
 
 ```typescript
-import { ParseEvent, parseMultiPartStream } from "multi-part-parser";
+import { ParseEvent, parseMultiPartStream } from "multi-part-stream-parser";
 
 // ...
 
