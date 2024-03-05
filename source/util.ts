@@ -12,6 +12,13 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
     result: BoundaryResult
 ] {
     const str = buffer.toString("utf8");
+    if (/^\r?\n$/.test(str)) {
+        return [
+            Buffer.from([]),
+            Buffer.from(str),
+            BoundaryResult.None
+        ];
+    }
     let crIndex = str.indexOf("\r\n"),
         nlIndex = str.indexOf("\n");
     if (crIndex === -1 && nlIndex === -1) {
@@ -79,7 +86,7 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
             // Some other line, just consume
             output = Buffer.concat([
                 output,
-                output.length > 0
+                l > 0
                     ? Buffer.from(`\n${lines[l]}`)
                     : Buffer.from(lines[l])
             ]);
@@ -87,7 +94,7 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
             // Consume the line
             output = Buffer.concat([
                 output,
-                output.length > 0
+                l > 0
                     ? Buffer.from(`\n${lines[l]}`)
                     : Buffer.from(lines[l])
             ]);

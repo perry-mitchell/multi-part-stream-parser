@@ -39,16 +39,16 @@ describe("readBufferUntilBoundary", function() {
             const buff = Buffer.from("Shorter than\nboundary");
             const [result, remain, boundary] = readBufferUntilBoundary(buff, this.boundary);
             expect(boundary).to.equal(BoundaryResult.None, "Should not have reached end");
-            expect(result.toString()).to.equal("Shorter than");
-            expect(remain.toString()).to.equal("\nboundary");
+            expect(result.toString()).to.equal("Shorter than\nboundary");
+            expect(remain.toString()).to.equal("");
         });
 
         it("reads buffers that contain boundaries", function() {
             const buff = Buffer.from(`Some content\n${this.boundary}\n`);
             const [result, remain, boundary] = readBufferUntilBoundary(buff, this.boundary);
-            expect(boundary).to.equal(BoundaryResult.None, "Should not have reached end");
+            expect(boundary).to.equal(BoundaryResult.Boundary, "Should have reached end");
             expect(result.toString()).to.equal("Some content");
-            expect(remain.toString()).to.equal(`\n${this.boundary}\n`);
+            expect(remain.toString()).to.equal(`${this.boundary}\n`);
         });
 
         it("reads buffers that begin with boundaries", function() {
@@ -73,16 +73,16 @@ describe("readBufferUntilBoundary", function() {
             const buff = Buffer.from("Shorter than\r\nboundary");
             const [result, remain, boundary] = readBufferUntilBoundary(buff, this.boundary);
             expect(boundary).to.equal(BoundaryResult.None, "Should not have reached end");
-            expect(result.toString()).to.equal("Shorter than");
-            expect(remain.toString()).to.equal("\nboundary");
+            expect(result.toString()).to.equal("Shorter than\nboundary");
+            expect(remain.toString()).to.equal("");
         });
 
         it("reads buffers that contain boundaries", function() {
             const buff = Buffer.from(`Some content\r\n${this.boundary}\r\n`);
             const [result, remain, boundary] = readBufferUntilBoundary(buff, this.boundary);
-            expect(boundary).to.equal(BoundaryResult.None, "Should not have reached end");
+            expect(boundary).to.equal(BoundaryResult.Boundary, "Should have reached end");
             expect(result.toString()).to.equal("Some content");
-            expect(remain.toString()).to.equal(`\r\n${this.boundary}\r\n`);
+            expect(remain.toString()).to.equal(`${this.boundary}\n`);
         });
 
         it("reads buffers that begin with boundaries", function() {
@@ -90,7 +90,7 @@ describe("readBufferUntilBoundary", function() {
             const [result, remain, boundary] = readBufferUntilBoundary(buff, this.boundary);
             expect(boundary).to.equal(BoundaryResult.Boundary, "Should have reached end");
             expect(result.toString()).to.equal("");
-            expect(remain.toString()).to.equal(`${this.boundary}\r\n`);
+            expect(remain.toString()).to.equal(`${this.boundary}\n`);
         });
 
         it("reads buffers that begin with epilogue boundaries", function() {
