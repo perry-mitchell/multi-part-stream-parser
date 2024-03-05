@@ -1,5 +1,11 @@
 # Multi-Part-Stream-Parser Changelog
 
+## v0.2.1
+_2024-03-05_
+
+ * **Bugfix**:
+   * Types not exported
+
 ## v0.2.0
 _2024-03-05_
 
