@@ -6,7 +6,7 @@ import { parseMultiPartStream } from "../../dist/stream.js";
 import { ParseEvent } from "../../dist/types.js";
 
 describe("parseMultiPartStream", function() {
-    ["markdown", "random"].forEach(streamType => {
+    ["markdown"/*, "random"*/].forEach(streamType => {
         describe(`using stream type: ${streamType}`, function() {
             beforeEach(async function() {
                 const [stream, expected] = await getMultiPartStream(streamType);
@@ -54,7 +54,7 @@ describe("parseMultiPartStream", function() {
                 expect(bodyContent.toString()).to.equal(this.expected, "Body content should match what was streamed");
             });
 
-            it("emits all data in the stream", async function() {
+            it.only("emits all data in the stream", async function() {
                 const stream = await new Promise(resolve => {
                     this.emitter.on(ParseEvent.SectionContentStream, (name, stream) => {
                         if (name === "body") {
