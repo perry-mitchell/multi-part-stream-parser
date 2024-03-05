@@ -46,8 +46,7 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
         return [buffer, Buffer.from([]), BoundaryResult.None];
     }
     // Split all lines
-    const nlChar = crIndex >= 0 ? "\r\n" : "\n";
-    const lines = str.split(crIndex >= 0 ? /\r\n/g : /\n/g);
+    const lines = str.split(/\r?\n/g);
     let output = Buffer.from([]);
     for (let l = 0; l < lines.length; l += 1) {
         if (/^--/.test(lines[l])) {
@@ -58,7 +57,7 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
                 // the rest later
                 return [
                     output,
-                    Buffer.from(lines.slice(l).join(nlChar)),
+                    Buffer.from(lines.slice(l).join("\n")),
                     BoundaryResult.None
                 ];
             } else if (lines[l] === `${boundary}--`) {
@@ -73,7 +72,7 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
                 return [
                     output,
                     // Set next to the start of the boundary
-                    Buffer.from(lines.slice(l).join(nlChar)),
+                    Buffer.from(lines.slice(l).join("\n")),
                     BoundaryResult.Boundary
                 ];
             }
