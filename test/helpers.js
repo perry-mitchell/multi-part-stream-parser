@@ -14,7 +14,7 @@ It is to demonstrate the following:
 `;
 const MARKDOWN_CHUNK_MAX = 20;
 const MARKDOWN_CHUNK_MIN = 10;
-const RANDOM_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678.,!~@#$%^&*()-_[]{};:'<>?|\n\n\n\n";
+const RANDOM_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678.,!~@#$%^&*()-_[]{};:'<>?|\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 
 function generateRandomString(length) {
     let output = "";
@@ -46,6 +46,10 @@ function getRandomStream() {
     const responseStream = new Minipass();
     const parts = [];
     let expectedContent = "";
+    // Push fixed context first
+    parts.push("abc123");
+    expectedContent += "abc123";
+    // Generate random
     for (let i = 0; i < COUNT; i += 1) {
         const part = generateRandomString(100);
         expectedContent = `${expectedContent}${part}`;
