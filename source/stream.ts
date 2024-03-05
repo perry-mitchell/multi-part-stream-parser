@@ -91,11 +91,6 @@ export function parseMultiPartStream(
             }
             // Read a section
             const [processed, next, boundaryResult] = readBufferUntilBoundary(buffer, boundary);
-            // console.log("PROC", JSON.stringify({
-            //     buffer: buffer.toString("utf8"),
-            //     processed: processed.toString("utf8"),
-            //     next: next.toString("utf8")
-            // }, undefined, 2))
             if (processed.length > 0) {
                 currentStream.push(processed);
                 currentContent = Buffer.concat([currentContent, processed]);
