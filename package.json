@@ -1,6 +1,6 @@
 {
   "name": "multi-part-stream-parser",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Multi-part form data stream parser",
   "exports": "./dist/index.js",
   "type": "module",
