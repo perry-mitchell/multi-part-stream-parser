@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "Multi-part form data stream parser",
   "exports": "./dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "run-s clean build:compile",
