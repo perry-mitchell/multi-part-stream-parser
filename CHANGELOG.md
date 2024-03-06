@@ -1,5 +1,11 @@
 # Multi-Part-Stream-Parser Changelog
 
+## v0.2.2
+_2024-03-06_
+
+ * **Bugfix**:
+   * Stream errors not propagated
+
 ## v0.2.1
 _2024-03-05_
 
