@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "debug": "^4.3.4",
-    "eventemitter3": "^5.0.1"
+    "eventemitter3": "^5.0.1",
+    "layerr": "^2.0.1"
   }
 }

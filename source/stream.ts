@@ -1,5 +1,6 @@
 import type { Readable } from "node:stream";
 import { PassThrough } from "node:stream";
+import { Layerr } from "layerr";
 import { extractName, readBufferUntilBoundary, readBufferUntilNewline } from "./util.js";
 import { debug } from "./debug.js";
 import { ParserEmitter } from "./ParserEmitter.js";
@@ -122,14 +123,24 @@ export function parseMultiPartStream(
         } else if (Buffer.isBuffer(chunk)) {
             buffer = Buffer.concat([buffer, chunk]);
         }
-        processBuffer();
+        try {
+            processBuffer();
+        } catch (err) {
+            debug(`processing error: ${err.message}`);
+            stream.emit("error", new Layerr(err, "Error processing stream chunk"));
+        }
     });
     stream.on("close", () => {
         debug("stream closed");
         // Cleanup buffer
         let lastLength = buffer.length;
         while (buffer.length > 0) {
-            processBuffer();
+            try {
+                processBuffer();
+            } catch (err) {
+                debug(`processing error: ${err.message}`);
+                stream.emit("error", new Layerr(err, "Error processing stream chunk (close event)"));
+            }
             if (buffer.length === lastLength) {
                 throw new Error("Failed cleaning up buffer: Stalled");
             }
