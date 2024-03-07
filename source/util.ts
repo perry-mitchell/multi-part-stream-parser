@@ -109,8 +109,15 @@ export function readBufferUntilBoundary(buffer: Buffer, boundary: string): [
 
 export function readBufferUntilNewline(buffer: Buffer): [output: string, remaining: Buffer, foundNewline: boolean] {
     const str = buffer.toString("utf-8");
-    const crIndex = str.indexOf("\r\n");
-    const nlIndex = str.indexOf("\n");
+    let crIndex = str.indexOf("\r\n"),
+        nlIndex = str.indexOf("\n");
+    if (crIndex >= 0 && nlIndex >= 0) {
+        if (nlIndex < crIndex) {
+            crIndex = -1;
+        } else  {
+            nlIndex = -1;
+        }
+    }
     if (crIndex >= 0) {
         return [
             str.substring(0, crIndex),
