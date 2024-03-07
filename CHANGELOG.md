@@ -1,5 +1,11 @@
 # Multi-Part-Stream-Parser Changelog
 
+## v0.2.3
+_2024-03-07_
+
+ * **Bugfix**:
+   * Multiple new-line types not handled during parsing
+
 ## v0.2.2
 _2024-03-06_
 
