@@ -1,6 +1,6 @@
 {
   "name": "multi-part-stream-parser",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Multi-part form data stream parser",
   "exports": "./dist/index.js",
   "types": "dist/index.d.ts",
