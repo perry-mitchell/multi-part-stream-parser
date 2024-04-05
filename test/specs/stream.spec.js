@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import Sinon from "sinon";
 import streamToString from "stream-to-string";
-import { getMultiPartStream } from "../helpers.js";
+import { getMultiPartStream, getMultiPartErrorStream } from "../helpers.js";
 import { parseMultiPartStream } from "../../dist/stream.js";
 import { ParseEvent } from "../../dist/types.js";
 
 describe("parseMultiPartStream", function() {
-    [/*"markdown",*/ "random"].forEach(streamType => {
+    ["markdown", "random"].forEach(streamType => {
         describe(`using stream type: ${streamType}`, function() {
             beforeEach(async function() {
                 const [stream, expected] = await getMultiPartStream(streamType);
@@ -36,7 +36,8 @@ describe("parseMultiPartStream", function() {
                 }, "First section's headers should contain correct content-disposition");
                 expect(secondName).to.equal("body", "First section should be called 'body'");
                 expect(secondContent).to.deep.equal({
-                    "content-disposition": `form-data; name="body"`
+                    "content-disposition": `form-data; name="body"; filename="file.dat"`,
+                    "content-type": "application/octet-stream"
                 }, "Second section's headers should contain correct content-disposition");
             });
 
@@ -63,13 +64,35 @@ describe("parseMultiPartStream", function() {
                     });
                 });
                 const fullBody = await streamToString(stream);
-                // console.log("LEN!", {
-                //     full: fullBody.length,
-                //     expected: this.expected.length
-                // });
-                // console.log("RES\n", JSON.stringify(fullBody), "\n", JSON.stringify(this.expected));
                 expect(fullBody).to.equal(this.expected);
             });
+        });
+    });
+
+    describe("using a stream that errors", function() {
+        beforeEach(async function() {
+            this.stream = getMultiPartErrorStream();
+            this.emitter = parseMultiPartStream(this.stream);
+        });
+
+        it("emits streams that emit the upstream error", async function() {
+            const stream = await new Promise(resolve => {
+                this.emitter.on(ParseEvent.SectionContentStream, (name, stream) => {
+                    if (name === "body") {
+                        resolve(stream);
+                    }
+                });
+            });
+            const err = await new Promise(resolve => {
+                stream.on("error", err => {
+                    resolve(err);
+                });
+                stream.on("end",() => {
+                    resolve(null);
+                });
+            });
+            expect(err).to.be.an.instanceOf(Error);
+            expect(err.message).to.match(/Test failure/i);
         });
     });
 });

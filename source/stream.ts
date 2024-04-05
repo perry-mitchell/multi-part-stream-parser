@@ -39,6 +39,15 @@ export function parseMultiPartStream(
         }
         allStreams.splice(0, Infinity);
     });
+    stream.on("error", (err: Error) => {
+        debug(`input stream error: ${err.message}`);
+        emitter.emit(ParseEvent.Error, new Layerr(err, "Input stream error"));
+        for (const stream of allStreams) {
+            if (!stream.destroyed) {
+                stream.emit("error", new Layerr(err, "Input stream error"));
+            }
+        }
+    });
     // Handle buffering
     const processBuffer = () => {
         if (state === ParseStatus.Epilogue) {
@@ -86,6 +95,9 @@ export function parseMultiPartStream(
             if (!currentStream) {
                 // Create new stream
                 currentStream = new PassThrough();
+                stream.on("error", (err: Error) => {
+                    debug(`stream error: ${err.message}`);
+                });
                 allStreams.push(currentStream);
                 const name = extractName(currentHeaders);
                 emitter.emit(ParseEvent.SectionContentStream, name, currentStream);
@@ -129,7 +141,9 @@ export function parseMultiPartStream(
             const error = new Layerr(err, "Error processing stream chunk");
             debug(`processing error: ${error.message}`);
             emitter.emit(ParseEvent.Error, error);
-            stream.emit("error",error );
+            if (!stream.destroyed) {
+                stream.emit("error" ,error);
+            }
         }
     });
     stream.on("close", () => {

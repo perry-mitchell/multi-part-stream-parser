@@ -1,4 +1,4 @@
-import { Minipass } from "minipass";
+import { PassThrough } from "stream";
 import MultiPart from "multi-part";
 
 const COUNT = 10;
@@ -27,7 +27,7 @@ function generateRandomString(length) {
 
 function getMarkdownStream() {
     let content = MARKDOWN_BODY;
-    const responseStream = new Minipass();
+    const responseStream = new PassThrough();
     const interval = setInterval(() => {
         if (content.length <= 0) {
             clearInterval(interval);
@@ -43,7 +43,7 @@ function getMarkdownStream() {
 }
 
 function getRandomStream() {
-    const responseStream = new Minipass();
+    const responseStream = new PassThrough();
     const parts = [];
     let expectedContent = "";
     // Push fixed context first
@@ -76,11 +76,48 @@ export async function getMultiPartStream(type) {
         contentType: "application/json"
     });
     // Body
-    const [responseStream, expectedContent] = type === "random"
-        ? getRandomStream()
-        : getMarkdownStream();
-    mp.append("body", responseStream);
+    let responseStream,
+        expectedContent;
+    switch (type) {
+        // case "error":
+        //     [responseStream, expectedContent] = getMarkdownErrorStream();
+        //     break;
+        case "markdown":
+            [responseStream, expectedContent] = getMarkdownStream();
+            break;
+        case "random":
+            [responseStream, expectedContent] = getRandomStream();
+            break;
+        default:
+            throw new Error(`Bad type: ${type}`);
+    }
+    mp.append("body", responseStream, {
+        filename: "file.dat"
+    });
     // Output
     const stream = await mp.stream();
     return [stream, expectedContent];
+}
+
+export function getMultiPartErrorStream() {
+    const boundary = "-----------------------------9051914041544843365972754266";
+    const nl = "\r\n";
+    const responseStream = new PassThrough();
+    responseStream.write(`${boundary}${nl}Content-Disposition: form-data; name="body"${nl}${nl}Start of the body...${generateRandomString(300)}`);
+    responseStream.cork();
+    responseStream.uncork();
+    setTimeout(() => {
+        responseStream.write(`This is more of the body!${nl} ${generateRandomString(300)}`);
+    }, 250);
+    setTimeout(() => {
+        responseStream.write(`This is more of the body!${nl} ${generateRandomString(300)}`);
+    }, 500);
+    setTimeout(() => {
+        responseStream.write(`This is more of the body!${nl} ${generateRandomString(300)}`);
+    }, 750);
+    setTimeout(() => {
+        console.log("EMIT ERR FROM TEST");
+        responseStream.emit("error", new Error("Test failure"));
+    }, 1000);
+    return responseStream;
 }
