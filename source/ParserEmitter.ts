@@ -1,10 +1,12 @@
 import type { Readable } from "node:stream";
 import EventEmitter from "eventemitter3";
+import { Layerr } from "layerr";
 import { ParseEvent, SectionHeaders } from "./types.js";
 import { debugEmitter } from "./debug.js";
 
 export interface ParserEvents {
     [ParseEvent.Complete]: () => void;
+    [ParseEvent.Error]: (error: Error | Layerr) => void;
     [ParseEvent.SectionContent]: (name: string | null, content: string | Buffer) => void;
     [ParseEvent.SectionContentStream]: (name: string | null, stream: Readable) => void;
     [ParseEvent.SectionHeaders]: (name: string | null, headers: SectionHeaders) => void;

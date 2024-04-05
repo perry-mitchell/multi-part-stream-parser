@@ -126,8 +126,10 @@ export function parseMultiPartStream(
         try {
             processBuffer();
         } catch (err) {
-            debug(`processing error: ${err.message}`);
-            stream.emit("error", new Layerr(err, "Error processing stream chunk"));
+            const error = new Layerr(err, "Error processing stream chunk");
+            debug(`processing error: ${error.message}`);
+            emitter.emit(ParseEvent.Error, error);
+            stream.emit("error",error );
         }
     });
     stream.on("close", () => {
@@ -142,7 +144,10 @@ export function parseMultiPartStream(
                 stream.emit("error", new Layerr(err, "Error processing stream chunk (close event)"));
             }
             if (buffer.length === lastLength) {
-                throw new Error("Failed cleaning up buffer: Stalled");
+                const err = new Layerr("Failed cleaning up buffer: Stalled");
+                debug(`processing error: ${err.message}`);
+                emitter.emit(ParseEvent.Error, err);
+                stream.emit("error", err);
             }
             lastLength = buffer.length;
         }

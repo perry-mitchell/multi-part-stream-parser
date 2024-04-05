@@ -6,6 +6,7 @@ export enum BoundaryResult {
 
 export enum ParseEvent {
     Complete = "complete",
+    Error = "error",
     SectionContent = "section-content",
     SectionHeaders = "section-headers",
     SectionContentStream = "section-content-stream"
