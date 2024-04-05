@@ -1,5 +1,12 @@
 # Multi-Part-Stream-Parser Changelog
 
+## v0.3.0
+_2024-04-05_
+
+ * Error event for parser emitter
+ * **Bugfix**:
+   * Stream close error unhandled
+
 ## v0.2.3
 _2024-03-07_
 
