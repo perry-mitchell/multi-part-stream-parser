@@ -1,5 +1,11 @@
 # Multi-Part-Stream-Parser Changelog
 
+## v0.3.1
+_2024-04-05_
+
+ * **Bugfix**:
+   * Not all errors handled during upstream exceptions
+
 ## v0.3.0
 _2024-04-05_
 
